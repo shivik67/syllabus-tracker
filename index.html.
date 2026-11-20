@@ -1,76 +1,395 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>My Syllabus Tracker</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Syllabus Tracker</title>
+
 <style>
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: Arial;
-  background: #f3f0ff;
+  margin: 0;
   padding: 20px;
+  font-family: Arial, sans-serif;
+  background: #f4f5fa;
+  color: #20243a;
 }
+
 .container {
-  max-width: 600px;
+  max-width: 750px;
   margin: auto;
+}
+
+header {
+  text-align: center;
+  margin: 25px 0;
+}
+
+header h1 {
+  font-size: 30px;
+  color: #5146a5;
+}
+
+header p {
+  color: #777;
+}
+
+.card {
   background: white;
-  padding: 20px;
+  padding: 18px;
   border-radius: 15px;
+  margin: 15px 0;
+  box-shadow: 0 3px 15px #0000000a;
 }
-h1 { color: #7048c6; }
+
+.stats {
+  display: flex;
+  gap: 12px;
+}
+
+.stat {
+  flex: 1;
+  text-align: center;
+}
+
+.stat h2 {
+  color: #6655bd;
+  margin: 5px;
+}
+
+.progress {
+  background: #e9e7f3;
+  height: 12px;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  background: #7160d5;
+  width: 0%;
+  transition: width 0.3s;
+}
+
 .subject {
-  background: #eee8ff;
-  padding: 15px;
-  margin: 12px 0;
-  border-radius: 10px;
+  font-weight: bold;
+  font-size: 19px;
+  color: #5146a5;
+  margin-bottom: 12px;
 }
-progress { width: 100%; }
+
+.chapter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.chapter input {
+  width: 18px;
+  height: 18px;
+  accent-color: #6655bd;
+}
+
+.done {
+  text-decoration: line-through;
+  color: #999;
+}
+
+input[type=text], select {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 9px;
+  width: 100%;
+  margin: 7px 0;
+}
+
+button {
+  background: #6655bd;
+  color: white;
+  border: 0;
+  padding: 11px 16px;
+  border-radius: 9px;
+  cursor: pointer;
+  margin: 5px 0;
+}
+
+button:hover {
+  background: #493c99;
+}
+
+.small {
+  font-size: 12px;
+  color: #888;
+}
 </style>
 </head>
+
 <body>
+
 <div class="container">
-<h1>My Syllabus Tracker 📚</h1>
-<p>Track your learning, one chapter at a time!</p>
 
-<h3>Mathematics</h3>
-<div class="subject">
-<label><input type="checkbox" class="task"> Sets</label><br>
-<label><input type="checkbox" class="task"> Relations and Functions</label><br>
-<label><input type="checkbox" class="task"> Trigonometry</label>
+<header>
+<h1>📚 SYLLABUS TRACKER</h1>
+<p>Your syllabus. Your progress. Your success.</p>
+</header>
+
+<div class="card stats">
+<div class="stat">
+<h2 id="percentage">0%</h2>
+<p>Completed</p>
 </div>
 
-<h3>Physics</h3>
-<div class="subject">
-<label><input type="checkbox" class="task"> Units and Measurements</label><br>
-<label><input type="checkbox" class="task"> Motion in a Straight Line</label><br>
-<label><input type="checkbox" class="task"> Laws of Motion</label>
+<div class="stat">
+<h2 id="completed">0</h2>
+<p>Finished</p>
 </div>
 
-<h3>Chemistry</h3>
-<div class="subject">
-<label><input type="checkbox" class="task"> Some Basic Concepts</label><br>
-<label><input type="checkbox" class="task"> Structure of Atom</label><br>
-<label><input type="checkbox" class="task"> Periodic Table</label>
+<div class="stat">
+<h2 id="remaining">0</h2>
+<p>Remaining</p>
+</div>
 </div>
 
+<div class="card">
 <h3>Overall Progress</h3>
-<progress id="progress" value="0" max="100"></progress>
-<p id="percentage">0% completed</p>
+<div class="progress">
+<div class="bar" id="bar"></div>
+</div>
+<p class="small" id="message">
+Start your learning journey!
+</p>
+</div>
+
+<div class="card">
+<h3>➕ Add a Subject</h3>
+<input
+id="subjectInput"
+type="text"
+placeholder="Enter subject name"
+>
+<button onclick="addSubject()">Add Subject</button>
+</div>
+
+<div class="card">
+<h3>📖 Add a Chapter</h3>
+<select id="subjectSelect"></select>
+<input
+id="chapterInput"
+type="text"
+placeholder="Enter chapter name"
+>
+<button onclick="addChapter()">Add Chapter</button>
+</div>
+
+<h2>My Subjects</h2>
+<div id="subjects"></div>
+
 </div>
 
 <script>
-const tasks = document.querySelectorAll('.task');
 
-function updateProgress() {
-  let done = document.querySelectorAll('.task:checked').length;
-  let total = tasks.length;
-  let percent = Math.round(done / total * 100);
-  document.getElementById('progress').value = percent;
-  document.getElementById('percentage').innerText =
-    percent + '% completed';
+let data;
+
+try {
+  data = JSON.parse(localStorage.getItem("syllabusData")) || [
+    {name:"Physics", chapters:[]},
+    {name:"Chemistry", chapters:[]},
+    {name:"Mathematics", chapters:[]},
+    {name:"English", chapters:[]}
+  ];
+} catch (error) {
+  data = [
+    {name:"Physics", chapters:[]},
+    {name:"Chemistry", chapters:[]},
+    {name:"Mathematics", chapters:[]},
+    {name:"English", chapters:[]}
+  ];
 }
 
-tasks.forEach(task => {
-  task.addEventListener('change', updateProgress);
-});
+function save() {
+  localStorage.setItem(
+    "syllabusData",
+    JSON.stringify(data)
+  );
+  render();
+}
+
+function addSubject() {
+  let name = document
+    .getElementById("subjectInput")
+    .value.trim();
+
+  if (!name) {
+    alert("Enter a subject name!");
+    return;
+  }
+
+  if (data.some(s => s.name.toLowerCase() === name.toLowerCase())) {
+    alert("Subject already exists!");
+    return;
+  }
+
+  data.push({name, chapters:[]});
+
+  document.getElementById("subjectInput").value = "";
+  save();
+}
+
+function addChapter() {
+  let index = document.getElementById("subjectSelect").value;
+
+  let name = document
+    .getElementById("chapterInput")
+    .value.trim();
+
+  if (!name) {
+    alert("Enter a chapter name!");
+    return;
+  }
+
+  if (index === "") {
+    alert("Add a subject first!");
+    return;
+  }
+
+  data[index].chapters.push({
+    name,
+    done:false
+  });
+
+  document.getElementById("chapterInput").value = "";
+  save();
+}
+
+function toggleChapter(i, j) {
+  data[i].chapters[j].done =
+    !data[i].chapters[j].done;
+
+  save();
+}
+
+function deleteChapter(i, j) {
+  if (confirm("Delete this chapter?")) {
+    data[i].chapters.splice(j, 1);
+    save();
+  }
+}
+
+function deleteSubject(i) {
+  if (confirm("Delete this subject and its chapters?")) {
+    data.splice(i, 1);
+    save();
+  }
+}
+
+function escapeHTML(str) {
+  return String(str).replace(/[&<>"']/g, c => ({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#39;'
+  })[c]);
+}
+
+function render() {
+  let total = 0;
+  let finished = 0;
+  let html = "";
+  let select = "";
+
+  data.forEach((subject, i) => {
+
+    select += `
+      <option value="${i}">
+        ${escapeHTML(subject.name)}
+      </option>
+    `;
+
+    let chapters = "";
+
+    subject.chapters.forEach((chapter, j) => {
+
+      total++;
+
+      if (chapter.done) finished++;
+
+      chapters += `
+        <div class="chapter">
+
+          <input
+            type="checkbox"
+            ${chapter.done ? "checked" : ""}
+            onchange="toggleChapter(${i},${j})"
+          >
+
+          <span
+            class="${chapter.done ? "done" : ""}"
+            style="flex:1"
+          >
+            ${escapeHTML(chapter.name)}
+          </span>
+
+          <button onclick="deleteChapter(${i},${j})">
+            ✕
+          </button>
+
+        </div>
+      `;
+    });
+
+    html += `
+      <div class="card">
+
+        <div class="subject">
+          ${escapeHTML(subject.name)}
+        </div>
+
+        ${chapters || '<p class="small">No chapters added yet.</p>'}
+
+        <button onclick="deleteSubject(${i})">
+          Delete Subject
+        </button>
+
+      </div>
+    `;
+  });
+
+  let percent = total
+    ? Math.round(finished / total * 100)
+    : 0;
+
+  document.getElementById("subjects").innerHTML = html;
+
+  document.getElementById("subjectSelect").innerHTML = select;
+
+  document.getElementById("percentage").innerText =
+    percent + "%";
+
+  document.getElementById("completed").innerText =
+    finished;
+
+  document.getElementById("remaining").innerText =
+    total - finished;
+
+  document.getElementById("bar").style.width =
+    percent + "%";
+
+  document.getElementById("message").innerText =
+    percent === 100 && total > 0
+      ? "Amazing! Syllabus completed! 🎉"
+      : "Keep going! Every chapter counts.";
+}
+
+render();
+
 </script>
+
 </body>
 </html>

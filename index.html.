@@ -1,1 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>My Syllabus Tracker</title>
+<style>
+body {
+  font-family: Arial;
+  background: #f3f0ff;
+  padding: 20px;
+}
+.container {
+  max-width: 600px;
+  margin: auto;
+  background: white;
+  padding: 20px;
+  border-radius: 15px;
+}
+h1 { color: #7048c6; }
+.subject {
+  background: #eee8ff;
+  padding: 15px;
+  margin: 12px 0;
+  border-radius: 10px;
+}
+progress { width: 100%; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>My Syllabus Tracker 📚</h1>
+<p>Track your learning, one chapter at a time!</p>
 
+<h3>Mathematics</h3>
+<div class="subject">
+<label><input type="checkbox" class="task"> Sets</label><br>
+<label><input type="checkbox" class="task"> Relations and Functions</label><br>
+<label><input type="checkbox" class="task"> Trigonometry</label>
+</div>
+
+<h3>Physics</h3>
+<div class="subject">
+<label><input type="checkbox" class="task"> Units and Measurements</label><br>
+<label><input type="checkbox" class="task"> Motion in a Straight Line</label><br>
+<label><input type="checkbox" class="task"> Laws of Motion</label>
+</div>
+
+<h3>Chemistry</h3>
+<div class="subject">
+<label><input type="checkbox" class="task"> Some Basic Concepts</label><br>
+<label><input type="checkbox" class="task"> Structure of Atom</label><br>
+<label><input type="checkbox" class="task"> Periodic Table</label>
+</div>
+
+<h3>Overall Progress</h3>
+<progress id="progress" value="0" max="100"></progress>
+<p id="percentage">0% completed</p>
+</div>
+
+<script>
+const tasks = document.querySelectorAll('.task');
+
+function updateProgress() {
+  let done = document.querySelectorAll('.task:checked').length;
+  let total = tasks.length;
+  let percent = Math.round(done / total * 100);
+  document.getElementById('progress').value = percent;
+  document.getElementById('percentage').innerText =
+    percent + '% completed';
+}
+
+tasks.forEach(task => {
+  task.addEventListener('change', updateProgress);
+});
+</script>
+</body>
+</html>
